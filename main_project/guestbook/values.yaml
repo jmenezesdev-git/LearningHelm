@@ -1,13 +1,57 @@
 backend:
+  enabled: true
   secret:
     mongodb_uri:
-      username: admin
+      username: root
       password: password
+      dbchart: mongodb
+      dbconn: "guestbook?authSource=admin&replicaSet=rs0"
+  # ingress:
+  #   enabled: false
   ingress:
-    enabled: false
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      nginx.ingress.kubernetes.io/cors-allow-origin: "http://dev.frontend.minikube.local"
+      nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+      nginx.ingress.kubernetes.io/cors-allow-headers: "X-Requested-With,Content-Type,Authorization"
+      nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    hosts:
+      - host: backend.minikube.local
+  env:
+    CORS_ORIGIN: "http://dev.frontend.minikube.local"
+
+  
+
 frontend:
   ingress:
     enabled: false
+
+
+mongodb:
+  architecture: replicaset       # modern Bitnami chart setting
+  replicaSet:
+    enabled: true
+    name: rs0
+    key: password
+  auth:
+    rootPassword: password
+  persistence:
+    size: 100Mi
+  arbiter:
+    enabled: true
+    persistence:
+      enabled: false
+  service:
+    name: dev-mongodb
+    type: ClusterIP
+    port: 27017
+    headless:
+      enabled: true
+
+tags:
+  api: true
+
 ingress:
   hosts:
     - host:
